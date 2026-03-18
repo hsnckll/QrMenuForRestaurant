@@ -219,7 +219,7 @@ const menuData = {
             categoryId: 'Tatlı',
             name: 'Künefe',
             description: 'Künefe peynirli, Şerbetli ',
-            bir: '200.00',
+            bir: '250.00',
             image: 'images/künefe.jpg'
         },
 
@@ -229,7 +229,7 @@ const menuData = {
             categoryId: 'Tatlı',
             name: 'Antep Katmeri',
             description: 'Fıstıklı, Kaymaklı, Şerbetli ',
-            bir: '200.00',
+            bir: '250.00',
             image: 'images/antepkatmeri.jpg'
         },
 
@@ -239,7 +239,7 @@ const menuData = {
             categoryId: 'Tatlı',
             name: 'Fıstıklı Burma Kadayıf',
             description: 'Fıstıklı, Şerbetli',
-            bir: '200.00',
+            bir: '250.00',
             image: 'images/burmakadayıf.jpg'
         },
 
