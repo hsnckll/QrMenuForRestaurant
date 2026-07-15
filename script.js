@@ -24,6 +24,17 @@ const menuData = {
             image: 'images/borukebabı.png'
         },
 
+        // URFA SARMASI
+         {
+            id: 30,
+            categoryId: 'Izgara',
+            name: 'Urfa Sarması',
+            description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
+            bir: '480.00',
+            birbucuk: '-------',
+            image: 'images/urfasarmasi.jpeg'
+        },
+
         // ADANA
         {
             id: 2,
