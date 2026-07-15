@@ -19,7 +19,7 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Boru Kebabı',
             description: 'En Az 3 Porsiyon Yapılmaktadır!  Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '381231231231230.00',
+            bir: '400.00',
             birbucuk: '-------',
             image: 'images/borukebabı.png'
         },
@@ -30,8 +30,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Adana Kebap (150gr)',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '350.00',
-            birbucuk: '530.00',
+            bir: '380.00',
+            birbucuk: '570.00',
             image: 'images/adana.jpg'
         },
 
@@ -41,8 +41,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Urfa Kebap (150gr)',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '350.00',
-            birbucuk: '530.00',
+            bir: '380.00',
+            birbucuk: '570.00',
             image: 'images/urfa.jpg'
         },
 
@@ -52,8 +52,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Tavuk Şiş',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '330.00',
-            birbucuk: '490.00',
+            bir: '350.00',
+            birbucuk: '530.00',
             image: 'images/tavukşiş.jpg'
         },
 
@@ -63,8 +63,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Kanat',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '340.00',
-            birbucuk: '510.00',
+            bir: '370.00',
+            birbucuk: '560.00',
             image: 'images/kanat.jpg'
         },
 
@@ -74,8 +74,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Kuzu Şiş',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '450.00',
-            birbucuk: '680.00',
+            bir: '480.00',
+            birbucuk: '720.00',
             image: 'images/kuzuşiş.jpg'
         },
 
@@ -85,8 +85,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Biftek',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '450.00',
-            birbucuk: '680.00',
+            bir: '480.00',
+            birbucuk: '720.00',
             image: 'images/biftek.jpg'
         },
 
@@ -96,8 +96,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Et Şiş',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '450.00',
-            birbucuk: '680.00',
+            bir: '480.00',
+            birbucuk: '720.00',
             image: 'images/etşiş.jpg'
         },
 
@@ -107,8 +107,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Servis Köfte',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '220.00',
-            birbucuk: '330.00',
+            bir: '240.00',
+            birbucuk: '360.00',
             image: 'images/köfte.jpg'
         },
 
@@ -119,8 +119,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Ciğer',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '300.00',
-            birbucuk: '450.00',
+            bir: '320.00',
+            birbucuk: '480.00',
             image: 'images/ciğer.jpg'
         },
 
@@ -130,8 +130,8 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Beyti Sarma',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '400.00',
-            birbucuk: '600.00',
+            bir: '450.00',
+            birbucuk: '680.00',
             image: 'images/beytisarma.jpg'
         },
 
@@ -141,7 +141,7 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Patlıcan Kebabı',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '400.00',
+            bir: '420.00',
             birbucuk: '-------',
             image: 'images/patlıcankebap.jpg'
         },
@@ -152,7 +152,7 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Domatesli Kebap',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '400.00',
+            bir: '420.00',
             birbucuk: '-------',
             image: 'images/domateslikebap.jpg'
         },
@@ -163,8 +163,8 @@ const menuData = {
             categoryId: 'Dürüm',
             name: 'Adana Dürüm (150gr)',
             description: 'Közlenmiş biber, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '350.00',
-            birbucuk: '530.00',
+            bir: '380.00',
+            birbucuk: '570.00',
             image: 'images/adanadürüm.jpg'
         },
 
@@ -174,8 +174,8 @@ const menuData = {
             categoryId: 'Dürüm',
             name: 'Urfa Dürüm (150gr)',
             description: 'Közlenmiş biber, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '350.00',
-            birbucuk: '530.00',
+            bir: '380.00',
+            birbucuk: '570.00',
             image: 'images/urfadürüm.jpg'
         },
 
@@ -185,8 +185,8 @@ const menuData = {
             categoryId: 'Dürüm',
             name: 'Tavuk Dürüm',
             description: 'Közlenmiş biber, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '330.00',
-            birbucuk: '490.00',
+            bir: '350.00',
+            birbucuk: '530.00',
             image: 'images/tavukşişdürüm.jpg'
         },
 
@@ -196,8 +196,8 @@ const menuData = {
             categoryId: 'Dürüm',
             name: 'Ciğer Dürüm',
             description: 'Közlenmiş biber, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '300.00',
-            birbucuk: '450.00',
+            bir: '320.00',
+            birbucuk: '480.00',
             image: 'images/ciğerdürüm.jpg'
         },
 
@@ -208,8 +208,8 @@ const menuData = {
             categoryId: 'Dürüm',
             name: 'Ekmek Arası Köfte',
             description: 'Közlenmiş biber, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '220.00',
-            birbucuk: '330.00',
+            bir: '240.00',
+            birbucuk: '360.00',
             image: 'images/ekmekarasıköfte.jpg'
         },
 
@@ -219,7 +219,7 @@ const menuData = {
             categoryId: 'Tatlı',
             name: 'Künefe',
             description: 'Künefe peynirli, Şerbetli ',
-            bir: '250.00',
+            bir: '300.00',
             image: 'images/künefe.jpg'
         },
 
@@ -229,19 +229,11 @@ const menuData = {
             categoryId: 'Tatlı',
             name: 'Antep Katmeri',
             description: 'Fıstıklı, Kaymaklı, Şerbetli ',
-            bir: '250.00',
+            bir: '300.00',
             image: 'images/antepkatmeri.jpg'
         },
 
-        // Burma Kadayıf
-        {
-            id: 20,
-            categoryId: 'Tatlı',
-            name: 'Fıstıklı Burma Kadayıf',
-            description: 'Fıstıklı, Şerbetli',
-            bir: '250.00',
-            image: 'images/burmakadayıf.jpg'
-        },
+        
 
         // GAZLI İÇECEKLER
         {
@@ -249,7 +241,7 @@ const menuData = {
             categoryId: 'İçecek',
             name: 'Gazlı İçecekler',
             description: 'KOLA, FANTA, SPRİTE, PEPSİ',
-            bir: '80.00',
+            bir: '90.00',
             image: 'images/kolafantaspritepepsi.png'
         },
 
@@ -259,7 +251,7 @@ const menuData = {
             categoryId: 'İçecek',
             name: 'İceTea',
             description: 'Lipton İceTea Çeşitleri',
-            bir: '80.00',
+            bir: '90.00',
             image: 'images/liptonlar.png'
         },
 
@@ -269,7 +261,7 @@ const menuData = {
             categoryId: 'İçecek',
             name: 'Yayık Ayran',
             description: 'Bol Köpüklü Yayık Ayran',
-            bir: '70.00',
+            bir: '80.00',
             image: 'images/açıkayran.jpg'
         },
 
@@ -289,7 +281,7 @@ const menuData = {
             categoryId: 'İçecek',
             name: 'Meyve Suyu',
             description: 'Cappy Meyve Suyu Çeşitleri',
-            bir: '80.00',
+            bir: '90.00',
             image: 'images/cappy.png'
         },
 
@@ -309,7 +301,7 @@ const menuData = {
             categoryId: 'İçecek',
             name: 'Şalgam',
             description: 'Doğanay Şalgam',
-            bir: '70.00',
+            bir: '80.00',
             image: 'images/şalgam.png'
         },
 
