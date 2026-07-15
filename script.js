@@ -19,7 +19,7 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Boru Kebabı',
             description: 'En Az 3 Porsiyon Yapılmaktadır!  Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '380.00',
+            bir: '381231231231230.00',
             birbucuk: '-------',
             image: 'images/borukebabı.png'
         },
