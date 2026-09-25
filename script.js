@@ -30,7 +30,7 @@ const menuData = {
             categoryId: 'Izgara',
             name: 'Urfa Sarması',
             description: 'Közlenmiş biber/domates, Bulgur Pilavı, Ezme ve Haydari ile servis edilmektedir.',
-            bir: '480.00',
+            bir: '1000.00',
             birbucuk: '-------',
             image: 'images/urfasarmasi.jpeg'
         },
