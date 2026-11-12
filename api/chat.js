@@ -9,7 +9,7 @@ const heatReplies = {
     'az acılı': 'hafif acılı bir terbiyeyle hazırlanıyor.',
     'acılı, az acılı seçeneği var': 'acılı hazırlanıyor. Daha hafif seviyorsan az acılı seçeneği de var.',
     'terbiyesinde acı var': 'acı kullanılan bir terbiyeyle hazırlanıyor. Menüde acının derecesi belirtilmiyor.',
-    'isotlu': 'isotla pişiriliyor. Menüde acının derecesi belirtilmiyor.',
+    'isotlu': 'isotla pişiriliyor. Ne kadar acılı olduğu menüde yazmıyor.',
 };
 const ayran = products.find(({ name }) => name === 'Ayran');
 const yayikAyran = products.find(({ name }) => name === 'Yayık Ayran');
@@ -64,6 +64,9 @@ Kurallar:
   İstenen porsiyonun fiyatı yoksa bunu söyle. "Uygun fiyatlı" önerilerde ilgili kategoriyi ve porsiyonu
   dikkate al. Boru Kebabı en az 3 porsiyon hazırlanır. İstenen bir toplamı hesaplarken bunu belirt.
 - Acı durumu ana ürün içindir. Yanında gelen közlenmiş biber veya ezmenin acı seviyesini tahmin etme.
+  Acı tadı için "acılı", "hafif acılı" veya "acı derecesi belirtilmemiş" de. "Isı", "ısısı",
+  "sıcaklık" gibi sözcükleri acı tadı anlamında kullanma. Menüde olmayan bir acı derecesi uydurma.
+  "Çok mu acılı?" gibi kısa bir soruya önce konuşulan yemeği veya seçenekleri esas alarak cevap ver.
   Isotla pişirilen ürünü asla acısız olarak tanımlama. Acılığı sorulursa "İsotla pişiriliyor,
   acı derecesi belirtilmemiş." de. Az acılı seçeneği ile tamamen
   acısız hazırlama seçeneğini karıştırma. Menüde seçenek varsa aynen belirt. Acının isteğe göre
@@ -123,11 +126,52 @@ function productName(product) {
 }
 
 function findDirectHeatQuestion(question) {
-    const match = normalizedName(question.trim()).match(/^(.+?)\s+(?:acili|acisiz|aci)\s+m[ui][?.!]*$/);
+    const match = normalizedName(question.trim()).match(/^(.+?)\s+(?:(?:acili|acisiz|aci|cok acili) mi|cok mu acili|ne kadar acili)[?.!]*$/);
     if (!match) return null;
 
     const name = ['adana', 'urfa'].includes(match[1]) ? `${match[1]} kebap` : match[1];
     return products.find((product) => product.aci && normalizedName(productName(product)) === name);
+}
+
+function listedProductNames(answer) {
+    return answer.split('\nListelenen ürünler: ').at(1)?.replace(/\.$/, '').split(', ');
+}
+
+function heatLevelFollowup(messages) {
+    const question = normalizedName(messages.at(-1).content).replace(/[?.!]+$/g, '').trim();
+    if (!/^(?:peki )?(?:cok mu aci(?:li)?|cok aci(?:li)? mi|aci(?:li)? mi|ne kadar aci(?:li)?|acisi (?:cok mu|nasil))$/.test(question)) {
+        return null;
+    }
+
+    const previousAnswer = messages.at(-2)?.content || '';
+    const listed = listedProductNames(previousAnswer);
+    const lastDish = messages.length > 1 && findDirectHeatQuestion(messages.at(-3).content);
+    const options = lastDish
+        ? [lastDish]
+        : products.filter((product) => product.aci && (listed
+            ? listed.includes(product.name)
+            : normalizedName(previousAnswer).includes(normalizedName(productName(product)))));
+
+    if (options.length === 1) {
+        const [product] = options;
+        const name = productName(product);
+        const reply = product.aci === 'az acılı' && question.includes('cok')
+            ? `Hayır, ${name.toLocaleLowerCase('tr')} hafif acılı. Acısı terbiyesinden geliyor.`
+            : `${name} ${heatReplies[product.aci]}`;
+        return { reply, productIds: [product.id] };
+    }
+    if (!options.length) {
+        return { reply: 'Hangi yemeği soruyorsun? Acı durumu yemeğe göre değişiyor.', productIds: [] };
+    }
+
+    const sentences = [
+        ...heatGroups,
+        ['acısız', 'acısız hazırlanıyor.'],
+    ].flatMap(([heat, sentence]) => {
+        const names = options.filter((product) => product.aci === heat).map(productName);
+        return names.length ? [`${productList.format(names)} ${sentence}`] : [];
+    });
+    return { reply: sentences.join(' '), productIds: options.map(({ id }) => id) };
 }
 
 function directHeatReply(product, messages) {
@@ -177,7 +221,7 @@ function heatRecommendations(messages) {
     }));
     const matching = mild ? groups.slice(0, 2).reverse() : groups;
     const lastAnswer = messages.at(-2)?.content || '';
-    const listed = lastAnswer.split('\nListelenen ürünler: ').at(1)?.replace(/\.$/, '').split(', ');
+    const listed = listedProductNames(lastAnswer);
     const unshown = isFollowup
         ? matching.map(({ sentence, options }) => ({
             sentence,
@@ -274,7 +318,8 @@ module.exports = async function chat(request, response) {
     if (!messages) return response.status(400).json({ error: 'Geçersiz sohbet mesajı.' });
 
     const question = messages.at(-1).content;
-    const menuReply = heatRecommendations(messages) || popularityReply(question) || chickenComparisonReply(question);
+    const menuReply = heatLevelFollowup(messages) || heatRecommendations(messages)
+        || popularityReply(question) || chickenComparisonReply(question);
     if (menuReply) return response.status(200).json(menuReply);
 
     const heatProduct = findDirectHeatQuestion(question);

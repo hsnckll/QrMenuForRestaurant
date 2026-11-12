@@ -178,9 +178,6 @@ body.light-mode :is(.menu-chat-launch, .menu-chat) {
   justify-self: start;
   max-width: 94%;
   padding: 0.7rem 0.9rem;
-  border: 1px solid var(--chat-line);
-  border-radius: 1rem 1rem 1rem 0.35rem;
-  background: var(--chat-surface);
   font-size: 0.9rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -188,13 +185,12 @@ body.light-mode :is(.menu-chat-launch, .menu-chat) {
 
 .menu-chat-user {
   justify-self: end;
-  border-color: color-mix(in srgb, var(--primary-color) 28%, var(--chat-line));
-  border-radius: 1rem 1rem 0.35rem 1rem;
   background: var(--chat-tint);
   color: var(--text-white);
 }
 
 .menu-chat-welcome {
+  background: var(--chat-surface);
   white-space: normal;
 }
 
