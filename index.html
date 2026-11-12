@@ -194,26 +194,39 @@
     <dialog class="menu-chat" id="menuChat" aria-labelledby="menuChatTitle">
       <div class="menu-chat-layout">
         <header class="menu-chat-header">
-          <h2 id="menuChatTitle">Menüye Sor</h2>
+          <span class="menu-chat-avatar" aria-hidden="true">
+            <span class="menu-chat-icon"></span>
+          </span>
+          <div class="menu-chat-brand">
+            <h2 id="menuChatTitle">Menüye Sor</h2>
+            <p>Urfa Sofrası</p>
+          </div>
           <button id="menuChatClose" class="menu-chat-close" type="button"
             aria-label="Sohbeti kapat" autofocus>×</button>
         </header>
         <div class="menu-chat-body" id="menuChatBody">
           <div class="menu-chat-messages" id="menuChatMessages" role="log"
             aria-label="Sohbet mesajları" aria-relevant="additions">
-            <p class="menu-chat-bubble">Merhaba! Yemekler, porsiyonlar ve fiyatlar hakkında sorabilirsin.</p>
+            <div class="menu-chat-bubble menu-chat-welcome">
+              <strong>Bugün canın ne çekiyor?</strong>
+              <p>Menüden bir yemek seçelim, yanına da güzel gidecek bir şey bulalım.</p>
+            </div>
           </div>
           <div class="menu-chat-suggestions" id="menuChatSuggestions">
             <button type="button">Acılı ne var?</button>
             <button type="button">Acısız ne önerirsin?</button>
-            <button type="button">Uygun fiyatlı dürüm öner</button>
+            <button type="button">Adana'nın yanına ne gider?</button>
           </div>
           <p class="menu-chat-status" id="menuChatStatus" role="status"></p>
         </div>
         <form class="menu-chat-form" id="menuChatForm">
-          <input id="menuChatInput" aria-label="Menü hakkında sorun" type="text"
-            placeholder="Menü hakkında sor..." maxlength="500" autocomplete="off" required />
-          <button id="menuChatSend" type="submit">Gönder</button>
+          <div class="menu-chat-composer">
+            <input id="menuChatInput" aria-label="Menü hakkında sorun" type="text"
+              placeholder="Menü hakkında sor…" maxlength="500" autocomplete="off" enterkeyhint="send" required />
+            <button id="menuChatSend" type="submit" aria-label="Gönder">
+              <span class="menu-chat-send-icon" aria-hidden="true"></span>
+            </button>
+          </div>
         </form>
       </div>
     </dialog>

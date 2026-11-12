@@ -56,7 +56,8 @@ Kurallar:
 - Acısız istenirse sadece acı durumu "acısız" olan yemekleri öner. Çok acılı bir ürünü ancak veri
   açıkça belirtiyorsa öner.
 - reply düz metin olsun. Ana yemek ve yanında önerdiğin ürünü productIds alanına menü numaralarıyla
-  ekle. Menüde bulunmayan ürünler için bu alanı boş bırak. Normalde 1–3 ürün yeterli.
+  ekle. Ürün numaralarını müşteriye gösterilen reply metnine yazma.
+  Menüde bulunmayan ürünler için bu alanı boş bırak. Normalde 1–3 ürün yeterli.
   Sonraki soruda "bunların" denirse önceki öneriler arasından seç.
 
 Menü satırları sırasıyla ürün numarası, ad, kategori, açıklama, acı durumu ve fiyatları içerir.
@@ -123,6 +124,15 @@ function directHeatReply(product, messages) {
     return { reply: `${reply} ${pairing}`, productIds: [product.id, drink.id] };
 }
 
+function removeProductNumbers(reply) {
+    for (const { id, name } of products) {
+        const label = name.split(' (')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const numberedName = new RegExp(`(${label}(?:\\s*\\(\\d+\\s*g(?:r)?\\))?)\\s*\\(${id}\\)`, 'giu');
+        reply = reply.replace(numberedName, '$1');
+    }
+    return reply;
+}
+
 module.exports = async function chat(request, response) {
     response.setHeader('Cache-Control', 'no-store');
     if (request.method !== 'POST') {
@@ -179,7 +189,7 @@ module.exports = async function chat(request, response) {
 
         const data = await upstream.json();
         const result = JSON.parse(data.choices?.[0]?.message?.content);
-        const reply = result.reply?.trim();
+        const reply = typeof result.reply === 'string' ? removeProductNumbers(result.reply).trim() : '';
         if (!reply || reply.length > 1200 || !Array.isArray(result.productIds)) {
             throw new Error('Invalid Groq response');
         }

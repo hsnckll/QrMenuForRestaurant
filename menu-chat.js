@@ -41,6 +41,13 @@
 
             const button = document.createElement('button');
             button.type = 'button';
+            const photo = document.createElement('img');
+            photo.src = product.image;
+            photo.alt = '';
+            photo.loading = 'lazy';
+            photo.addEventListener('error', () => { photo.style.visibility = 'hidden'; }, { once: true });
+            const details = document.createElement('span');
+            details.className = 'menu-chat-product-details';
             const name = document.createElement('strong');
             name.textContent = product.name;
             const price = document.createElement('span');
@@ -50,7 +57,11 @@
             if (!single && Number.isFinite(Number(product.birbucuk)) && Number(product.birbucuk) > 0) {
                 price.textContent += ` · 1,5 porsiyon ${currency.format(Number(product.birbucuk))}`;
             }
-            button.append(name, price);
+            details.append(name, price);
+            const arrow = document.createElement('span');
+            arrow.className = 'menu-chat-product-arrow';
+            arrow.setAttribute('aria-hidden', 'true');
+            button.append(photo, details, arrow);
             button.addEventListener('click', () => {
                 dialog.close();
                 document.dispatchEvent(new CustomEvent('menu:show-product', { detail: id }));
@@ -83,7 +94,7 @@
             const result = await response.json();
             if (!response.ok) throw new Error(result.error);
 
-            addMessage(result.reply, 'assistant');
+            const reply = addMessage(result.reply, 'assistant');
             addProducts(result.productIds);
             const names = result.productIds.map((id) => menuData.products.find((item) => item.id === id)?.name)
                 .filter(Boolean);
@@ -91,16 +102,18 @@
             history.push(userMessage, { role: 'assistant', content: result.reply + references });
             if (history.length > 6) history.splice(0, history.length - 6);
             status.textContent = '';
+            const replyOffset = reply.getBoundingClientRect().top - body.getBoundingClientRect().top;
+            body.scrollTop += replyOffset - 16;
         } catch (error) {
             const fallback = 'Şu anda yanıt alamadım. Sorunu tekrar gönderebilirsin.';
             status.textContent = error.message.startsWith('Sohbet') ? error.message : fallback;
             bubble.remove();
             if (!input.value) input.value = content;
             suggestions.hidden = history.length > 0;
+            scrollToLatest();
         } finally {
             send.disabled = false;
             pending = false;
-            scrollToLatest();
         }
     }
 
