@@ -1,16 +1,18 @@
 const { categories, products } = require('../menu-data.js');
 
-const model = 'openai/gpt-oss-20b';
+const model = 'openai/gpt-oss-120b';
 const productIds = new Set(products.map(({ id }) => id));
 const grillSides = 'Közlenmiş biber ve domates, bulgur pilavı, ezme ve haydariyle servis edilir.';
 const wrapSides = 'Közlenmiş biber, ezme ve haydariyle servis edilir.';
 const heatReplies = {
-    'acısız': 'Ana yemek acısız hazırlanır.',
-    'az acılı': 'Hafif acılı bir terbiyeyle hazırlanır.',
-    'acılı, az acılı seçeneği var': 'Acılı hazırlanır. Az acılı seçeneği de vardır.',
-    'terbiyesinde acı var': 'Terbiyesinde acı kullanılır. Acı derecesi menüde belirtilmemiş.',
-    'isotlu': 'İsotla pişirilir. Acı derecesi menüde belirtilmemiş.',
+    'acısız': 'acısız hazırlanıyor.',
+    'az acılı': 'hafif acılı bir terbiyeyle hazırlanıyor.',
+    'acılı, az acılı seçeneği var': 'acılı hazırlanıyor. Daha hafif seviyorsan az acılı seçeneği de var.',
+    'terbiyesinde acı var': 'acı kullanılan bir terbiyeyle hazırlanıyor. Menüde acının derecesi belirtilmiyor.',
+    'isotlu': 'isotla pişiriliyor. Menüde acının derecesi belirtilmiyor.',
 };
+const ayran = products.find(({ name }) => name === 'Ayran');
+const yayikAyran = products.find(({ name }) => name === 'Yayık Ayran');
 const catalog = products.map(({ id, name, categoryId, description, aci, price, bir, birbucuk }) => {
     const category = categories.find((item) => item.id === categoryId).name;
     const singlePrice = price || ['Tatlı', 'İçecek'].includes(categoryId);
@@ -24,29 +26,42 @@ const catalog = products.map(({ id, name, categoryId, description, aci, price, b
     return [id, name, category, shortDescription, heat, prices];
 });
 
-const instructions = `Urfa Sofrası'nın Türkçe menü asistanısın. Yalnızca aşağıdaki güncel menü hakkında
-kısa, doğal yanıtlar ver. Kullanıcının önceki sorularını ve önceki önerilerde listelenen ürünleri dikkate al.
-Her zaman Türkçe yanıtla. Menü dışında bir şey sorulursa, menü hakkında yardımcı olabileceğini söyle.
+const instructions = `Urfa Sofrası'nda misafirle konuşur gibi, samimi ve doğal Türkçe kullan.
+Misafirin sorusunu cevapla ve yemek seçmesine yardımcı ol. Genelde 2–4 kısa cümle yeterli.
+Misafir bir yemeği merak ediyorsa ya da ne yemesi gerektiğini soruyorsa, menüden bir ayrıntı ver ve yanına
+bir eşlikçi öner. Bunun için "Yanına ne gider?" diye ayrıca sormasını bekleme. İçecek, tatlı veya alternatif
+seçimini yemeğe göre yap ve neden yakıştığını bir cümleyle söyle. Tek bir ek öneri yeterli.
+Öneriyi soruya göre değiştir. Misafirin bütçesine ve damak tadına uy, istemediği bir şeyi tekrar önerme.
+Yalnızca fiyat sorulduğunda fiyatı hemen ver. Önceki mesajları dikkate al ve aynı öneriyi tekrarlama.
+Menü dışında bir şey sorulursa, menü hakkında yardımcı olabileceğini söyle.
+
+Örnek soru: "Adana kebap nasıl, önerir misin?"
+Örnek reply: "Acılı kebap seviyorsan Adana kebabımızı öneririm. Yanında bulgur pilavı, ezme ve haydari geliyor.
+Acıya serin bir eşlikçi istersen köpüklü yayık ayranımız güzel gider."
+Örnek productIds: [2, 23]
 
 Kurallar:
-- Yalnızca menüdeki ürünleri ve açıkça verilen bilgileri kullan. Stok, tarifteki bilinmeyen malzemeler,
-  alerjen güvenliği veya özel hazırlama istekleri için personele danışılmasını söyle.
+- Menüdeki ürünlerden kendi eşleştirmelerini yapabilirsin. "Yanına güzel gider" gibi bir öneri sun.
+  Satış, popülerlik, stok veya menüde olmayan malzemeler hakkında bilgi uydurma.
+  Garnitürleri aşağıda listelendiği gibi ayrı ayrı an. Bulgur pilavına biber veya domates eklendiğini söyleme.
+  Alerjen güvenliği veya menüde belirtilmeyen özel hazırlama istekleri için personele yönlendir.
 - Fiyatlar TL cinsinden. "Bir porsiyon" ve "bir buçuk porsiyon" fiyatlarını karıştırma.
   İstenen porsiyonun fiyatı yoksa bunu söyle. "Uygun fiyatlı" önerilerde ilgili kategoriyi ve porsiyonu
   dikkate al. Boru Kebabı en az 3 porsiyon hazırlanır. İstenen bir toplamı hesaplarken bunu belirt.
 - Acı durumu ana ürün içindir. Yanında gelen közlenmiş biber veya ezmenin acı seviyesini tahmin etme.
   Isotla pişirilen ürünü asla acısız olarak tanımlama. Acılığı sorulursa "İsotla pişiriliyor,
   acı derecesi belirtilmemiş." de. Az acılı seçeneği ile tamamen
-  acısız hazırlama seçeneğini karıştırma. Özel hazırlama seçeneğini ancak menü belirtiyorsa öner.
+  acısız hazırlama seçeneğini karıştırma. Menüde seçenek varsa aynen belirt. Acının isteğe göre
+  ayarlanabildiğini veya menüde olmayan başka bir hazırlama seçeneğini söyleme.
 - Acısız istenirse sadece acı durumu "acısız" olan yemekleri öner. Çok acılı bir ürünü ancak veri
   açıkça belirtiyorsa öner.
-- reply düz metin olsun. Önerdiğin veya hakkında bilgi verdiğin ürünleri productIds alanında menüdeki
-  numaralarıyla ver. Menüde bulunmayan ürünler için bu alanı boş bırak. En fazla 8 farklı ürün seç.
+- reply düz metin olsun. Ana yemek ve yanında önerdiğin ürünü productIds alanına menü numaralarıyla
+  ekle. Menüde bulunmayan ürünler için bu alanı boş bırak. Normalde 1–3 ürün yeterli.
   Sonraki soruda "bunların" denirse önceki öneriler arasından seç.
 
 Menü satırları sırasıyla ürün numarası, ad, kategori, açıklama, acı durumu ve fiyatları içerir.
-[G] ${grillSides}
-[D] ${wrapSides}
+[G] Ayrı garnitürler: köz biber, köz domates, bulgur pilavı, ezme, haydari.
+[D] Ayrı garnitürler: köz biber, ezme, haydari.
 
 Menü:
 ${JSON.stringify(catalog)}`;
@@ -94,6 +109,20 @@ function findDirectHeatQuestion(question) {
     return products.find(({ name, aci }) => aci && normalizedName(name.split(' (')[0]) === match[1]);
 }
 
+function directHeatReply(product, messages) {
+    const name = product.name.split(' (')[0];
+    const drink = product.categoryId === 'Dürüm' ? ayran : yayikAyran;
+    const alreadyMentioned = messages.slice(0, -1).some(({ content }) =>
+        normalizedName(content).includes('ayran'));
+    const reply = `${name} ${heatReplies[product.aci]}`;
+    if (!drink || alreadyMentioned) return { reply, productIds: [product.id] };
+
+    const pairing = drink === yayikAyran
+        ? 'Yanına köpüklü yayık ayranımız güzel gider.'
+        : 'Dürümün yanına serin bir ayran iyi gider.';
+    return { reply: `${reply} ${pairing}`, productIds: [product.id, drink.id] };
+}
+
 module.exports = async function chat(request, response) {
     response.setHeader('Cache-Control', 'no-store');
     if (request.method !== 'POST') {
@@ -118,8 +147,7 @@ module.exports = async function chat(request, response) {
 
     const heatProduct = findDirectHeatQuestion(messages.at(-1).content);
     if (heatProduct && heatReplies[heatProduct.aci]) {
-        const name = heatProduct.name.split(' (')[0];
-        return response.status(200).json({ reply: `${name}. ${heatReplies[heatProduct.aci]}`, productIds: [heatProduct.id] });
+        return response.status(200).json(directHeatReply(heatProduct, messages));
     }
 
     const apiKey = process.env.GROQ_API_KEY;
