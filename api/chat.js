@@ -13,6 +13,13 @@ const heatReplies = {
 };
 const ayran = products.find(({ name }) => name === 'Ayran');
 const yayikAyran = products.find(({ name }) => name === 'Yayık Ayran');
+const productList = new Intl.ListFormat('tr', { style: 'long', type: 'conjunction' });
+const heatGroups = [
+    ['acılı, az acılı seçeneği var', 'için acılı ve az acılı seçenek var.'],
+    ['az acılı', 'hafif acılı terbiyeyle hazırlanıyor.'],
+    ['terbiyesinde acı var', 'hazırlanırken terbiyesine acı ekleniyor.'],
+    ['isotlu', 'isotla pişiriliyor. Acı derecesi menüde belirtilmiyor.'],
+];
 const catalog = products.map(({ id, name, categoryId, description, aci, price, bir, birbucuk }) => {
     const category = categories.find((item) => item.id === categoryId).name;
     const singlePrice = price || ['Tatlı', 'İçecek'].includes(categoryId);
@@ -27,12 +34,16 @@ const catalog = products.map(({ id, name, categoryId, description, aci, price, b
 });
 
 const instructions = `Urfa Sofrası'nda misafirle konuşur gibi, samimi ve doğal Türkçe kullan.
-Misafirin sorusunu cevapla ve yemek seçmesine yardımcı ol. Genelde 2–4 kısa cümle yeterli.
+Misafirin sorusuna günlük konuşma diliyle cevap ver. Ürünleri kuru kuruya sıralamak yerine hangisinin
+ona uyacağını, nedenini ve aralarındaki farkı söyle. Detay istenirse porsiyon, servis ve acı bilgisini
+menüden alıp açıklayabilirsin. Genel liste istendiğinde tek ürünle yetinme.
 Misafir bir yemeği merak ediyorsa ya da ne yemesi gerektiğini soruyorsa, menüden bir ayrıntı ver ve yanına
 bir eşlikçi öner. Bunun için "Yanına ne gider?" diye ayrıca sormasını bekleme. İçecek, tatlı veya alternatif
 seçimini yemeğe göre yap ve neden yakıştığını bir cümleyle söyle. Tek bir ek öneri yeterli.
 Öneriyi soruya göre değiştir. Misafirin bütçesine ve damak tadına uy, istemediği bir şeyi tekrar önerme.
-Yalnızca fiyat sorulduğunda fiyatı hemen ver. Önceki mesajları dikkate al ve aynı öneriyi tekrarlama.
+Yalnızca fiyat sorulduğunda fiyatı hemen ver. "Başka ne var?" gibi kısa takip sorularında önceki isteğin
+konusunu ve tercihlerini sürdür. Örneğin acılı yemek konuşuluyorsa hafif acılı tavuk şiş, kanat ve tavuk
+dürümü de düşün. Önceki kartları alternatifmiş gibi tekrar önerme.
 Menü dışında bir şey sorulursa, menü hakkında yardımcı olabileceğini söyle.
 
 Örnek soru: "Adana kebap nasıl, önerir misin?"
@@ -42,8 +53,12 @@ Acıya serin bir eşlikçi istersen köpüklü yayık ayranımız güzel gider."
 
 Kurallar:
 - Menüdeki ürünlerden kendi eşleştirmelerini yapabilirsin. "Yanına güzel gider" gibi bir öneri sun.
-  Satış, popülerlik, stok veya menüde olmayan malzemeler hakkında bilgi uydurma.
+  Satış, popülerlik, stok veya menüde olmayan malzemeler hakkında bilgi uydurma. Hangi yemeklerin
+  çok satıldığı veya misafirlerin genelde ne yediği sorulursa satış bilgisi olmadığını söyle ve
+  varsa kendi önerini damak tadına göre sun. "Genelde tercih ediliyor" deme.
   Garnitürleri aşağıda listelendiği gibi ayrı ayrı an. Bulgur pilavına biber veya domates eklendiğini söyleme.
+  Karşılaştırmada parça boyutu, yumuşaklık veya acı farkı hakkında tahmin yürütme. Örneğin "İkisi de hafif
+  acılı terbiyeyle hazırlanıyor. Tavuk şişte tavuk parçaları şişte pişiyor, kanat ise ızgarada kızartılıyor."
   Alerjen güvenliği veya menüde belirtilmeyen özel hazırlama istekleri için personele yönlendir.
 - Fiyatlar TL cinsinden. "Bir porsiyon" ve "bir buçuk porsiyon" fiyatlarını karıştırma.
   İstenen porsiyonun fiyatı yoksa bunu söyle. "Uygun fiyatlı" önerilerde ilgili kategoriyi ve porsiyonu
@@ -57,7 +72,7 @@ Kurallar:
   açıkça belirtiyorsa öner.
 - reply düz metin olsun. Ana yemek ve yanında önerdiğin ürünü productIds alanına menü numaralarıyla
   ekle. Ürün numaralarını müşteriye gösterilen reply metnine yazma.
-  Menüde bulunmayan ürünler için bu alanı boş bırak. Normalde 1–3 ürün yeterli.
+  Menüde bulunmayan ürünler için bu alanı boş bırak. Genel liste istenirse ilgili ürünleri atlama.
   Sonraki soruda "bunların" denirse önceki öneriler arasından seç.
 
 Menü satırları sırasıyla ürün numarası, ad, kategori, açıklama, acı durumu ve fiyatları içerir.
@@ -103,15 +118,20 @@ function normalizedName(value) {
     return value.toLocaleLowerCase('tr').normalize('NFD').replace(/\p{M}/gu, '').replaceAll('ı', 'i');
 }
 
+function productName(product) {
+    return product.name.split(' (')[0];
+}
+
 function findDirectHeatQuestion(question) {
     const match = normalizedName(question.trim()).match(/^(.+?)\s+(?:acili|acisiz|aci)\s+m[ui][?.!]*$/);
     if (!match) return null;
 
-    return products.find(({ name, aci }) => aci && normalizedName(name.split(' (')[0]) === match[1]);
+    const name = ['adana', 'urfa'].includes(match[1]) ? `${match[1]} kebap` : match[1];
+    return products.find((product) => product.aci && normalizedName(productName(product)) === name);
 }
 
 function directHeatReply(product, messages) {
-    const name = product.name.split(' (')[0];
+    const name = productName(product);
     const drink = product.categoryId === 'Dürüm' ? ayran : yayikAyran;
     const alreadyMentioned = messages.slice(0, -1).some(({ content }) =>
         normalizedName(content).includes('ayran'));
@@ -124,10 +144,87 @@ function directHeatReply(product, messages) {
     return { reply: `${reply} ${pairing}`, productIds: [product.id, drink.id] };
 }
 
+function isAnotherQuestion(question) {
+    const q = normalizedName(question).replace(/[?.!]+$/g, '').trim();
+    return /^(?:peki )?(?:baska(?: (?:ne var|ne onerirsin|neler var|bir sey var mi|oner))?|daha ne var)$/.test(q);
+}
+
+function heatOverview(question) {
+    const q = normalizedName(question).replace(/[?.!]+$/g, '').trim();
+    const heat = q.match(/^(?:(az|hafif|cok) )?ac(?:ili|i)(?:\s*(?:ne|na) var|(?: yemek(?:ler)?| secenek(?:ler)?| izgara(?:lar)?| durum(?:ler)?)?(?: ne var| neler var| neler| var mi| oner(?:ir misin)?| tavsiye eder misin| istiyorum))$/);
+    if (!heat) return null;
+
+    const category = /\bdurum/.test(q) ? 'Dürüm' : /\bizgara/.test(q) ? 'Izgara' : null;
+    return { level: heat[1], category };
+}
+
+function heatRecommendations(messages) {
+    const questions = messages.filter(({ role }) => role === 'user').map(({ content }) => content);
+    const current = questions.at(-1);
+    const isFollowup = isAnotherQuestion(current);
+    const topic = isFollowup
+        ? questions.slice(0, -1).findLast((question) => !isAnotherQuestion(question))
+        : current;
+    const direct = isFollowup && topic && findDirectHeatQuestion(topic);
+    const overview = (topic && heatOverview(topic)) || (direct?.aci && direct.aci !== 'acısız' ? {} : null);
+    if (!overview) return null;
+
+    const { level, category } = overview;
+    const mild = level === 'az' || level === 'hafif';
+    const groups = heatGroups.map(([heat, sentence]) => ({
+        sentence,
+        options: products.filter((product) => product.aci === heat && (!category || product.categoryId === category)),
+    }));
+    const matching = mild ? groups.slice(0, 2).reverse() : groups;
+    const lastAnswer = messages.at(-2)?.content || '';
+    const listed = lastAnswer.split('\nListelenen ürünler: ').at(1)?.replace(/\.$/, '').split(', ');
+    const unshown = isFollowup
+        ? matching.map(({ sentence, options }) => ({
+            sentence,
+            options: options.filter((product) => product.id !== direct?.id &&
+                !(listed ? listed.includes(product.name) : normalizedName(lastAnswer).includes(normalizedName(productName(product))))),
+        }))
+        : matching;
+
+    if (isFollowup && !unshown.some(({ options }) => options.length)) {
+        const mildOptions = groups[1].options;
+        const names = productList.format(mildOptions.map(productName));
+        return {
+            reply: `Acılı seçenekler bunlar. Acıyı hafif tutmak istiyorsan ${names} arasından seçebilirsin.`,
+            productIds: mildOptions.map(({ id }) => id),
+        };
+    }
+
+    const sentences = unshown
+        .filter(({ options }) => options.length)
+        .map(({ sentence, options }) => `${productList.format(options.map(productName))} ${sentence}`);
+    if (level === 'cok') sentences.unshift('Menüde çok acılı olarak belirtilen bir yemek yok.');
+    else if (sentences.length > 1) {
+        sentences.unshift(isFollowup ? 'Bunların dışında şunlar da var.' : 'Ne kadar acı sevdiğine göre birkaç seçenek var.');
+    }
+    return {
+        reply: sentences.join('\n'),
+        productIds: unshown.flatMap(({ options }) => options.map(({ id }) => id)),
+    };
+}
+
+function popularityReply(question) {
+    const q = normalizedName(question);
+    if (!/en cok|en populer|\bmusteri|\bgelen\b|\bgelenler\b/.test(q) ||
+        !/ne yi|ne ye|tercih|satiliyor|populer|satiyor|siparis/.test(q)) return null;
+
+    const adana = products.find((product) => productName(product) === 'Adana Kebap');
+    const urfa = products.find((product) => productName(product) === 'Urfa Kebap');
+    return {
+        reply: 'En çok ne sipariş edildiğine dair bir bilgim yok. Acılı kebap seviyorsan Adana iyi gider. Acısız bir kebap istersen Urfa’yı öneririm.',
+        productIds: [adana?.id, urfa?.id].filter(Boolean),
+    };
+}
+
 function removeProductNumbers(reply) {
     for (const { id, name } of products) {
         const label = name.split(' (')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const numberedName = new RegExp(`(${label}(?:\\s*\\(\\d+\\s*g(?:r)?\\))?)\\s*\\(${id}\\)`, 'giu');
+        const numberedName = new RegExp(`(${label}(?:\\s*\\(\\d+\\s*g(?:r)?\\))?)\\s*\\((?:id\\s*)?${id}\\)`, 'giu');
         reply = reply.replace(numberedName, '$1');
     }
     return reply;
@@ -155,7 +252,11 @@ module.exports = async function chat(request, response) {
     }
     if (!messages) return response.status(400).json({ error: 'Geçersiz sohbet mesajı.' });
 
-    const heatProduct = findDirectHeatQuestion(messages.at(-1).content);
+    const question = messages.at(-1).content;
+    const menuReply = heatRecommendations(messages) || popularityReply(question);
+    if (menuReply) return response.status(200).json(menuReply);
+
+    const heatProduct = findDirectHeatQuestion(question);
     if (heatProduct && heatReplies[heatProduct.aci]) {
         return response.status(200).json(directHeatReply(heatProduct, messages));
     }
