@@ -2,6 +2,7 @@
     const dialog = document.getElementById('menuChat');
     const launch = document.getElementById('menuChatLaunch');
     const close = document.getElementById('menuChatClose');
+    const dock = document.getElementById('menuChatDock');
     const form = document.getElementById('menuChatForm');
     const input = document.getElementById('menuChatInput');
     const send = document.getElementById('menuChatSend');
@@ -17,8 +18,36 @@
     const history = [];
     let pending = false;
 
-    launch.addEventListener('click', () => dialog.showModal());
+    const viewport = window.visualViewport;
+    function fitViewport() {
+        if (!dialog.open || !viewport || viewport.scale !== 1) return;
+
+        const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+        dialog.style.setProperty('--chat-viewport', `${viewport.height}px`);
+        dialog.style.setProperty('--chat-keyboard-offset', `${keyboardOffset}px`);
+        dialog.toggleAttribute('data-keyboard', document.activeElement === input
+            && (keyboardOffset > 100 || viewport.height < 470));
+    }
+
+    launch.addEventListener('click', () => {
+        dialog.showModal();
+        launch.setAttribute('aria-expanded', 'true');
+        fitViewport();
+    });
     close.addEventListener('click', () => dialog.close());
+    dock.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+        if (dialog.open) return;
+        launch.setAttribute('aria-expanded', 'false');
+        dialog.removeAttribute('data-keyboard');
+    });
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) dialog.close();
+    });
+    input.addEventListener('focus', fitViewport);
+    input.addEventListener('blur', () => requestAnimationFrame(fitViewport));
+    viewport?.addEventListener('resize', fitViewport);
+    viewport?.addEventListener('scroll', fitViewport);
 
     function scrollToLatest() {
         body.scrollTop = body.scrollHeight;

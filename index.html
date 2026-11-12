@@ -187,8 +187,9 @@
     </div>
 
     <button class="menu-chat-launch" id="menuChatLaunch" type="button"
-      aria-haspopup="dialog" aria-controls="menuChat">
-      <span class="menu-chat-icon" aria-hidden="true"></span> Menüye Sor
+      aria-haspopup="dialog" aria-controls="menuChat" aria-expanded="false" aria-label="Menüye Sor">
+      <span class="menu-chat-icon" aria-hidden="true"></span>
+      <span class="menu-chat-launch-label">Menüye Sor</span>
     </button>
 
     <dialog class="menu-chat" id="menuChat" aria-labelledby="menuChatTitle">
@@ -229,6 +230,9 @@
           </div>
         </form>
       </div>
+      <button class="menu-chat-dock" id="menuChatDock" type="button" aria-label="Sohbeti küçült">
+        <span class="menu-chat-dock-icon" aria-hidden="true"></span>
+      </button>
     </dialog>
 
     <script src="menu-data.js"></script>
