@@ -2,7 +2,7 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>Urfa Sofrası QR Menü</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -186,6 +186,40 @@
       </div>
     </div>
 
+    <button class="menu-chat-launch" id="menuChatLaunch" type="button"
+      aria-haspopup="dialog" aria-controls="menuChat">
+      <span class="menu-chat-icon" aria-hidden="true"></span> Menüye Sor
+    </button>
+
+    <dialog class="menu-chat" id="menuChat" aria-labelledby="menuChatTitle">
+      <div class="menu-chat-layout">
+        <header class="menu-chat-header">
+          <h2 id="menuChatTitle">Menüye Sor</h2>
+          <button id="menuChatClose" class="menu-chat-close" type="button"
+            aria-label="Sohbeti kapat" autofocus>×</button>
+        </header>
+        <div class="menu-chat-body" id="menuChatBody">
+          <div class="menu-chat-messages" id="menuChatMessages" role="log"
+            aria-label="Sohbet mesajları" aria-relevant="additions">
+            <p class="menu-chat-bubble">Merhaba! Yemekler, porsiyonlar ve fiyatlar hakkında sorabilirsin.</p>
+          </div>
+          <div class="menu-chat-suggestions" id="menuChatSuggestions">
+            <button type="button">Acılı ne var?</button>
+            <button type="button">Acısız ne önerirsin?</button>
+            <button type="button">Uygun fiyatlı dürüm öner</button>
+          </div>
+          <p class="menu-chat-status" id="menuChatStatus" role="status"></p>
+        </div>
+        <form class="menu-chat-form" id="menuChatForm">
+          <input id="menuChatInput" aria-label="Menü hakkında sorun" type="text"
+            placeholder="Menü hakkında sor..." maxlength="500" autocomplete="off" required />
+          <button id="menuChatSend" type="submit">Gönder</button>
+        </form>
+      </div>
+    </dialog>
+
+    <script src="menu-data.js"></script>
     <script src="script.js"></script>
+    <script src="menu-chat.js"></script>
   </body>
 </html>
