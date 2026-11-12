@@ -2,6 +2,15 @@ const { categories, products } = require('../menu-data.js');
 
 const model = 'openai/gpt-oss-20b';
 const productIds = new Set(products.map(({ id }) => id));
+const grillSides = 'Közlenmiş biber ve domates, bulgur pilavı, ezme ve haydariyle servis edilir.';
+const wrapSides = 'Közlenmiş biber, ezme ve haydariyle servis edilir.';
+const heatReplies = {
+    'acısız': 'Ana yemek acısız hazırlanır.',
+    'az acılı': 'Hafif acılı bir terbiyeyle hazırlanır.',
+    'acılı, az acılı seçeneği var': 'Acılı hazırlanır. Az acılı seçeneği de vardır.',
+    'terbiyesinde acı var': 'Terbiyesinde acı kullanılır. Acı derecesi menüde belirtilmemiş.',
+    'isotlu': 'İsotla pişirilir. Acı derecesi menüde belirtilmemiş.',
+};
 const catalog = products.map(({ id, name, categoryId, description, aci, price, bir, birbucuk }) => {
     const category = categories.find((item) => item.id === categoryId).name;
     const singlePrice = price || ['Tatlı', 'İçecek'].includes(categoryId);
@@ -10,12 +19,14 @@ const catalog = products.map(({ id, name, categoryId, description, aci, price, b
         : { birPorsiyon: Number(bir) };
     if (!singlePrice && Number(birbucuk) > 0) prices.birBucukPorsiyon = Number(birbucuk);
 
-    return { id, name, category, description, aci: aci || 'belirtilmemiş', prices };
+    const shortDescription = description.replace(grillSides, '[G]').replace(wrapSides, '[D]');
+    const heat = aci === 'isotlu' ? 'isotla pişirilir, acı derecesi belirtilmemiş' : aci || 'belirtilmemiş';
+    return [id, name, category, shortDescription, heat, prices];
 });
 
 const instructions = `Urfa Sofrası'nın Türkçe menü asistanısın. Yalnızca aşağıdaki güncel menü hakkında
 kısa, doğal yanıtlar ver. Kullanıcının önceki sorularını ve önceki önerilerde listelenen ürünleri dikkate al.
-Menü dışında bir şey sorulursa, menü hakkında yardımcı olabileceğini söyle.
+Her zaman Türkçe yanıtla. Menü dışında bir şey sorulursa, menü hakkında yardımcı olabileceğini söyle.
 
 Kurallar:
 - Yalnızca menüdeki ürünleri ve açıkça verilen bilgileri kullan. Stok, tarifteki bilinmeyen malzemeler,
@@ -24,13 +35,18 @@ Kurallar:
   İstenen porsiyonun fiyatı yoksa bunu söyle. "Uygun fiyatlı" önerilerde ilgili kategoriyi ve porsiyonu
   dikkate al. Boru Kebabı en az 3 porsiyon hazırlanır. İstenen bir toplamı hesaplarken bunu belirt.
 - Acı durumu ana ürün içindir. Yanında gelen közlenmiş biber veya ezmenin acı seviyesini tahmin etme.
-  Isotlu ürünlerde acılık derecesini ancak menü belirtiyorsa söyle. Az acılı seçeneği ile tamamen
+  Isotla pişirilen ürünü asla acısız olarak tanımlama. Acılığı sorulursa "İsotla pişiriliyor,
+  acı derecesi belirtilmemiş." de. Az acılı seçeneği ile tamamen
   acısız hazırlama seçeneğini karıştırma. Özel hazırlama seçeneğini ancak menü belirtiyorsa öner.
 - Acısız istenirse sadece acı durumu "acısız" olan yemekleri öner. Çok acılı bir ürünü ancak veri
   açıkça belirtiyorsa öner.
 - reply düz metin olsun. Önerdiğin veya hakkında bilgi verdiğin ürünleri productIds alanında menüdeki
   numaralarıyla ver. Menüde bulunmayan ürünler için bu alanı boş bırak. En fazla 8 farklı ürün seç.
   Sonraki soruda "bunların" denirse önceki öneriler arasından seç.
+
+Menü satırları sırasıyla ürün numarası, ad, kategori, açıklama, acı durumu ve fiyatları içerir.
+[G] ${grillSides}
+[D] ${wrapSides}
 
 Menü:
 ${JSON.stringify(catalog)}`;
@@ -67,6 +83,17 @@ function parseMessages(body) {
     return valid ? messages.map(({ role, content }) => ({ role, content: content.trim() })) : null;
 }
 
+function normalizedName(value) {
+    return value.toLocaleLowerCase('tr').normalize('NFD').replace(/\p{M}/gu, '').replaceAll('ı', 'i');
+}
+
+function findDirectHeatQuestion(question) {
+    const match = normalizedName(question.trim()).match(/^(.+?)\s+(?:acili|acisiz|aci)\s+m[ui][?.!]*$/);
+    if (!match) return null;
+
+    return products.find(({ name, aci }) => aci && normalizedName(name.split(' (')[0]) === match[1]);
+}
+
 module.exports = async function chat(request, response) {
     response.setHeader('Cache-Control', 'no-store');
     if (request.method !== 'POST') {
@@ -88,6 +115,12 @@ module.exports = async function chat(request, response) {
         return response.status(400).json({ error: 'Geçersiz istek.' });
     }
     if (!messages) return response.status(400).json({ error: 'Geçersiz sohbet mesajı.' });
+
+    const heatProduct = findDirectHeatQuestion(messages.at(-1).content);
+    if (heatProduct && heatReplies[heatProduct.aci]) {
+        const name = heatProduct.name.split(' (')[0];
+        return response.status(200).json({ reply: `${name}. ${heatReplies[heatProduct.aci]}`, productIds: [heatProduct.id] });
+    }
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
@@ -124,6 +157,15 @@ module.exports = async function chat(request, response) {
         }
 
         const ids = [...new Set(result.productIds.filter((id) => productIds.has(id)))].slice(0, 8);
+        if (!ids.length) {
+            const question = messages.at(-1).content.toLocaleLowerCase('tr');
+            const answer = reply.toLocaleLowerCase('tr');
+            const mentioned = products
+                .map(({ id, name }) => ({ id, name: name.split(' (')[0].toLocaleLowerCase('tr') }))
+                .filter(({ name }) => question.includes(name) && answer.includes(name))
+                .sort((first, second) => second.name.length - first.name.length)[0];
+            if (mentioned) ids.push(mentioned.id);
+        }
         return response.status(200).json({ reply, productIds: ids });
     } catch (error) {
         console.error('Menu chat:', error.name, error.message.startsWith('Groq HTTP') ? error.message : '');
