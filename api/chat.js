@@ -221,6 +221,27 @@ function popularityReply(question) {
     };
 }
 
+function chickenComparisonReply(question) {
+    const q = normalizedName(question).replace(/[?.!]/g, ' ').replace(/\s+/g, ' ').trim();
+    const comparison = q.match(/^(?:kanatla tavuk sisin|kanat ile tavuk sisin|tavuk sisle kanadin) farki ne(?: (bir bucuk porsiyonlari kac (?:lira|tl|para)))?$/);
+    if (!comparison) return null;
+
+    const wings = products.find(({ name }) => name === 'Kanat');
+    const skewers = products.find(({ name }) => name === 'Tavuk Şiş');
+    if (wings?.aci !== 'az acılı' || skewers?.aci !== 'az acılı') return null;
+
+    const reply = 'İkisi de hafif acılı terbiyeyle hazırlanıyor. Kanat ızgarada tavuk kanadı olarak servis ediliyor. Tavuk şişte ise tavuk parçaları şişe dizilip pişiriliyor.';
+    if (!comparison[1]) return { reply, productIds: [wings.id, skewers.id] };
+    const wingPrice = Number(wings.birbucuk);
+    const skewerPrice = Number(skewers.birbucuk);
+    if (!(wingPrice > 0 && skewerPrice > 0)) return null;
+
+    return {
+        reply: `${reply} Bir buçuk porsiyon kanat ${wingPrice} TL, tavuk şiş ${skewerPrice} TL.`,
+        productIds: [wings.id, skewers.id],
+    };
+}
+
 function removeProductNumbers(reply) {
     for (const { id, name } of products) {
         const label = name.split(' (')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -253,7 +274,7 @@ module.exports = async function chat(request, response) {
     if (!messages) return response.status(400).json({ error: 'Geçersiz sohbet mesajı.' });
 
     const question = messages.at(-1).content;
-    const menuReply = heatRecommendations(messages) || popularityReply(question);
+    const menuReply = heatRecommendations(messages) || popularityReply(question) || chickenComparisonReply(question);
     if (menuReply) return response.status(200).json(menuReply);
 
     const heatProduct = findDirectHeatQuestion(question);
